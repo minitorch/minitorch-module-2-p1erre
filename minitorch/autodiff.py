@@ -22,7 +22,10 @@ def central_difference(f: Any, *vals: Any, arg: int = 0, epsilon: float = 1e-6) 
     Returns:
         An approximation of $f'_i(x_0, \ldots, x_{n-1})$
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 1.1.
+    v_plus = vals[:arg] + (vals[arg] + epsilon,) + vals[arg+1:]
+    v_minus = vals[:arg] + (vals[arg] - epsilon,) + vals[arg+1:] 
+    return (f(*v_plus) - f(*v_minus)) / (2 * epsilon)
 
 
 variable_count = 1
@@ -60,7 +63,26 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
     Returns:
         Non-constant Variables in topological order starting from the right.
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # We are assuming that the graph have NOT multiple edges between two nodes
+    # TODO: Implement for Task 1.4.
+    
+    # this solution assumes that the computation graph is a DAG
+
+    ordered_variables = []
+    marked_variables = set()
+
+    def visit(v: Variable):
+        if v.unique_id in marked_variables: 
+            return
+        for p in v.parents:
+            if not p.is_constant():
+                visit(p)
+        ordered_variables.insert(0, v)
+        marked_variables.add(v.unique_id)
+
+    visit(variable)
+
+    return ordered_variables
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
@@ -74,8 +96,27 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
 
     No return. Should write to its results to the derivative values of each leaf through `accumulate_derivative`.
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 1.4.
+    ordered_vars = topological_sort(variable)
+    assert ordered_vars[0].unique_id == variable.unique_id
 
+    non_leaf_var_deriv = {}
+    non_leaf_var_deriv[variable.unique_id] = deriv    
+
+    for var in ordered_vars:
+
+        if var.is_leaf():
+            continue
+        
+        dvar = non_leaf_var_deriv[var.unique_id]
+        parents = var.chain_rule(dvar)
+        for pv, d in parents:
+            if pv.is_leaf():
+                pv.accumulate_derivative(d)
+            elif pv.unique_id not in non_leaf_var_deriv.keys():
+                non_leaf_var_deriv[pv.unique_id] = d
+            else:
+                non_leaf_var_deriv[pv.unique_id] += d
 
 @dataclass
 class Context:
