@@ -40,6 +40,25 @@ def test_layout_bad() -> None:
 
 
 @pytest.mark.task2_1
+def test_td() -> None:
+    tensor_data = TensorData([0.0, 0.0], (2,), (1,) )
+    indices = list(tensor_data.indices())
+
+    # Check that enough positions are enumerated.
+    assert len(indices) == tensor_data.size
+
+    print(tensor_data.shape, tensor_data.strides, tensor_data._storage)
+    print(indices)
+
+    # Check that enough positions are enumerated only once.
+    assert len(set(tensor_data.indices())) == len(indices)
+
+    # Check that all indices are within the shape.
+    for ind in tensor_data.indices():
+        for i, p in enumerate(ind):
+            assert p >= 0 and p < tensor_data.shape[i]
+
+@pytest.mark.task2_1
 @given(tensor_data())
 def test_enumeration(tensor_data: TensorData) -> None:
     "Test enumeration of tensor_datas."
@@ -47,6 +66,9 @@ def test_enumeration(tensor_data: TensorData) -> None:
 
     # Check that enough positions are enumerated.
     assert len(indices) == tensor_data.size
+
+    print(tensor_data.shape, tensor_data.strides, tensor_data._storage)
+    print(indices)
 
     # Check that enough positions are enumerated only once.
     assert len(set(tensor_data.indices())) == len(indices)
