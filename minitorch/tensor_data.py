@@ -44,6 +44,7 @@ def index_to_position(index: Index, strides: Strides) -> int:
     """
 
     # TODO: Implement for Task 2.1.
+    index, strides = np.asarray(index, dtype=np.int32), np.asarray(strides, dtype=np.int32)
     assert index.ndim == strides.ndim == 1
     return index.dot(strides) 
 
@@ -62,17 +63,19 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
 
     """
     # TODO: Implement for Task 2.1.
+    shape = np.asarray(shape, dtype=np.int32)
     assert shape.ndim == 1
     assert (shape > 0).all()
     assert  0 <= ordinal < np.prod(shape)
     assert len(out_index) == len(shape)
 
     for i in range(1, len(shape)):
-        block_size = np.prod(shape[:len(shape) - i])
-        out_index[len(shape) - i] = ordinal // block_size
+        # block_size = np.prod(shape[:len(shape) - i])
+        block_size = np.prod(shape[i:])
+        out_index[i - 1] = ordinal // block_size
         ordinal %= block_size
 
-    out_index[0] = ordinal % shape[0]
+    out_index[len(shape)-1] = ordinal % shape[len(shape) - 1]
 
 def broadcast_index(
     big_index: Index, big_shape: Shape, shape: Shape, out_index: OutIndex

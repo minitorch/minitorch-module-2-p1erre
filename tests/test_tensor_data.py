@@ -41,22 +41,23 @@ def test_layout_bad() -> None:
 
 @pytest.mark.task2_1
 def test_td() -> None:
-    tensor_data = TensorData([0.0, 0.0], (2,), (1,) )
-    indices = list(tensor_data.indices())
+    for tensor_data in [TensorData([0.0, 0.0], (2,), (1,)), TensorData([0.0, 0.0], (1, 2), (2, 1))]:
+        tensor_data = TensorData([0.0, 0.0], (2,), (1,) )
+        indices = list(tensor_data.indices())
 
-    # Check that enough positions are enumerated.
-    assert len(indices) == tensor_data.size
+        # Check that enough positions are enumerated.
+        assert len(indices) == tensor_data.size
 
-    print(tensor_data.shape, tensor_data.strides, tensor_data._storage)
-    print(indices)
+        print(tensor_data.shape, tensor_data.strides, tensor_data._storage)
+        print(indices)
 
-    # Check that enough positions are enumerated only once.
-    assert len(set(tensor_data.indices())) == len(indices)
+        # Check that enough positions are enumerated only once.
+        assert len(set(tensor_data.indices())) == len(indices)
 
-    # Check that all indices are within the shape.
-    for ind in tensor_data.indices():
-        for i, p in enumerate(ind):
-            assert p >= 0 and p < tensor_data.shape[i]
+        # Check that all indices are within the shape.
+        for ind in tensor_data.indices():
+            for i, p in enumerate(ind):
+                assert p >= 0 and p < tensor_data.shape[i]
 
 @pytest.mark.task2_1
 @given(tensor_data())
