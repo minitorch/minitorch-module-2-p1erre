@@ -85,6 +85,9 @@ class TensorBackend:
         self.log_back_zip = ops.zip(operators.log_back)
         self.inv_back_zip = ops.zip(operators.inv_back)
 
+        # NOTE: Added
+        self.sigmoid_back_zip = ops.zip(operators.sigmoid_back)
+
         # Reduce
         self.add_reduce = ops.reduce(operators.add, 0.0)
         self.mul_reduce = ops.reduce(operators.mul, 1.0)
@@ -269,8 +272,11 @@ def tensor_map(fn: Callable[[float], float]) -> Any:
         in_strides: Strides,
     ) -> None:
         # TODO: Implement for Task 2.3.
-        raise NotImplementedError("Need to implement for Task 2.3")
+        assert out_shape == in_shape
+        assert out_strides == in_strides
+        out[:] = np.vectorize(fn)(in_storage)
 
+        
     return _map
 
 
@@ -319,7 +325,9 @@ def tensor_zip(fn: Callable[[float, float], float]) -> Any:
         b_strides: Strides,
     ) -> None:
         # TODO: Implement for Task 2.3.
-        raise NotImplementedError("Need to implement for Task 2.3")
+        assert out_shape == a_shape == b_shape
+        assert out_strides == a_strides == b_strides
+        out[:] = np.vectorize(fn)(a_storage, b_storage)
 
     return _zip
 
@@ -355,7 +363,26 @@ def tensor_reduce(fn: Callable[[float, float], float]) -> Any:
         reduce_dim: int,
     ) -> None:
         # TODO: Implement for Task 2.3.
-        raise NotImplementedError("Need to implement for Task 2.3")
+        #assert a_shape[reduce_dim] > 1 # Ambigous?
+
+        out_shape = np.asarray(out_shape, dtype=np.int32)
+        for out_ordinal in len(out):
+            out_index = np.zeros(len(out_shape), np.int32)
+            to_index(out_ordinal, out_shape, out_index)
+            a_index = out_index[:reduce_dim] + np.array([0]) + out_index[reduce_dim+1:]
+            out_position = index_to_position(out_index, out_strides)
+            a_position = index_to_position(a_index, a_strides)
+            out[out_position] = a_storage[a_position] # reduce initial value; NOTE: default value if a_shape[reduce_dim] == 1 
+
+            for i in range(1, a_shape[reduce_dim]):
+                a_index[reduce_dim] = i
+                a_position = index_to_position(a_index, a_strides)
+                out[out_position] = fn(out[out_position], a_storage[a_position]) # reduce step
+
+
+
+        
+        
 
     return _reduce
 

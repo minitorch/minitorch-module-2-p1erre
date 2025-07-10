@@ -97,12 +97,6 @@ def broadcast_index(
         None
     """
     # TODO: Implement for Task 2.2.
-    out_index = np.array([0.0] * (len(big_shape) - len(shape)))
-
-    for i in range(len(out_index)):
-        if shape[i] == 1:
-            out_index[i] = 0
-    
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
     """

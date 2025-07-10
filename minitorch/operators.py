@@ -95,6 +95,13 @@ def sigmoid(x: float) -> float:
     """Calculates the sigmoid of a function."""
     return 1 / (1 + math.exp(-x)) if x >= 0 else math.exp(x) / (1 + math.exp(x))
 
+# NOTE: this wass added
+
+def sigmoid_back(x: float, y:float):
+    """Calculates the derivative of the sigmoid"""
+    s = sigmoid(x)
+    return y * s * (1 - s)
+
 
 # - relu
 def relu(x: float) -> float:
