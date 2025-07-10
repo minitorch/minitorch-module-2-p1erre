@@ -120,6 +120,11 @@ def exp(x: float) -> float:
     """Calculates the exponential function"""
     return math.exp(x)
 
+# NOTE:
+
+def exp_back(x: float, y:float) -> float:
+    """Calculates the derivative of the exp times a second arg"""
+    return y * math.exp(x)
 
 # - log_back
 def log_back(x: float, y: float) -> float:

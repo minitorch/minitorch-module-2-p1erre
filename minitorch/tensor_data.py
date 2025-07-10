@@ -67,7 +67,6 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
     assert shape.ndim == 1
     assert (shape > 0).all()
     assert  0 <= ordinal < np.prod(shape)
-    assert len(out_index) == len(shape)
 
     for i in range(1, len(shape)):
         # block_size = np.prod(shape[:len(shape) - i])
@@ -97,6 +96,13 @@ def broadcast_index(
         None
     """
     # TODO: Implement for Task 2.2.
+    for si, bi in zip(range(len(shape)), range(len(big_shape)-len(shape), len(big_shape))): 
+        if shape[si] == big_shape[bi]:
+            out_index[si] = big_index[bi]
+        elif shape[si] == 1:
+            out_index[si] = 0
+        else:
+            raise IndexingError("shape {shape} can not be broadcasted to {big_shape}")
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
     """
