@@ -228,7 +228,7 @@ class Permute(Function):
         order_list = storage.astype(np.int64).tolist()
         ctx.save_for_backward(order)  # Save the tensor, not the list
 
-        return minitorch.Tensor(a._tensor.permute(*order_list), backend=a.backend)
+        return a._new(a._tensor.permute(*order_list))
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
@@ -239,9 +239,8 @@ class Permute(Function):
         inverse_order = [0] * len(order_list)
         for i, j in enumerate(order_list):
             inverse_order[j] = i
-
-        grad_input = grad_output._tensor.permute(*inverse_order)
-        return (minitorch.Tensor(grad_input, backend=grad_output.backend), 0.0)
+ 
+        return (grad_output._new(grad_output._tensor.permute(*inverse_order)), 0.0)
 
 class View(Function):
     @staticmethod
