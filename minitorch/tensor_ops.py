@@ -383,17 +383,22 @@ def tensor_reduce(fn: Callable[[float, float], float]) -> Any:
     ) -> None:
         # TODO: Implement for Task 2.3.
         #assert a_shape[reduce_dim] > 1 # Ambigous?
+        assert len(out_shape) == (len(a_shape) - 1) or len(out_shape) == len(a_shape)
 
         out_shape = np.asarray(out_shape, dtype=np.int32)
-        for out_ordinal in len(out):
+        for out_ordinal in range(len(out)):
             out_index = np.zeros(len(out_shape), np.int32)
             to_index(out_ordinal, out_shape, out_index)
-            a_index = out_index[:reduce_dim] + np.array([0]) + out_index[reduce_dim+1:]
             out_position = index_to_position(out_index, out_strides)
+            if len(out_shape) == len(a_shape):
+                a_index = out_index.copy()
+            else:
+                a_index = np.concatenate([out_index[:reduce_dim], np.array([0], dtype=np.int32), out_index[reduce_dim:]])
+            
             a_position = index_to_position(a_index, a_strides)
-            out[out_position] = a_storage[a_position] # reduce initial value; NOTE: default value if a_shape[reduce_dim] == 1 
+            # out[out_position] = a_storage[a_position] # reduce initial value; NOTE: default value if a_shape[reduce_dim] == 1 
 
-            for i in range(1, a_shape[reduce_dim]):
+            for i in range(a_shape[reduce_dim]):
                 a_index[reduce_dim] = i
                 a_position = index_to_position(a_index, a_strides)
                 out[out_position] = fn(out[out_position], a_storage[a_position]) # reduce step
