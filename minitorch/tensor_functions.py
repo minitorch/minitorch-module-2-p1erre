@@ -107,7 +107,7 @@ class Mul(Function):
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
         # TODO: Implement for Task 2.4.
         (a, b) = ctx.saved_values
-        return b.f.mul_zip(b, grad_output), a.mul_zip(a, grad_output)
+        return b.f.mul_zip(b, grad_output), a.f.mul_zip(a, grad_output)
 
 class Sigmoid(Function):
     @staticmethod
@@ -140,7 +140,7 @@ class Log(Function):
     @staticmethod
     def forward(ctx: Context, t1: Tensor) -> Tensor:
         # TODO: Implement for Task 2.3.
-        ctx.save_for_backward
+        ctx.save_for_backward(t1)
         return t1.f.log_map(t1) 
 
     @staticmethod
@@ -172,7 +172,7 @@ class Sum(Function):
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
-        a_shape, dim = ctx.saved_values
+        (a_shape, dim) = ctx.saved_values
         return grad_output, 0.0
 
 
@@ -195,8 +195,8 @@ class LT(Function):
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
         # TODO: Implement for Task 2.4.
-        raise NotImplementedError("Need to implement for Task 2.4")
-
+        (a, b) = ctx.saved_values
+        return a.zeros(), b.zeros()
 
 class EQ(Function):
     @staticmethod
@@ -208,7 +208,8 @@ class EQ(Function):
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
         # TODO: Implement for Task 2.4.
-        raise NotImplementedError("Need to implement for Task 2.4")
+        (a, b) = ctx.saved_values
+        return a.zeros(), b.zeros()
 
 
 class IsClose(Function):
@@ -220,15 +221,27 @@ class IsClose(Function):
 class Permute(Function):
     @staticmethod
     def forward(ctx: Context, a: Tensor, order: Tensor) -> Tensor:
-        # TODO: Implement for Task 2.3.
-        ctx.save_for_backward(a , order)
-        return Tensor(a._tensor.permute(), backend=a.backend)
+        storage = order._tensor._storage
+        assert np.all(np.isfinite(storage)), "Storage contains NaN or infinite values."
+        assert np.all(np.equal(np.mod(storage, 1), 0)), "Storage contains non-integer float values."
+
+        order_list = storage.astype(np.int64).tolist()
+        ctx.save_for_backward(order)  # Save the tensor, not the list
+
+        return minitorch.Tensor(a._tensor.permute(*order_list), backend=a.backend)
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
-        # TODO: Implement for Task 2.4.
-        raise NotImplementedError("Need to implement for Task 2.4")
+        (order,) = ctx.saved_values
+        order_list = order._tensor._storage.astype(np.int64).tolist()
 
+        # Inverse Permutation: 
+        inverse_order = [0] * len(order_list)
+        for i, j in enumerate(order_list):
+            inverse_order[j] = i
+
+        grad_input = grad_output._tensor.permute(*inverse_order)
+        return (minitorch.Tensor(grad_input, backend=grad_output.backend), 0.0)
 
 class View(Function):
     @staticmethod
