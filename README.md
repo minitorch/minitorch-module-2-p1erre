@@ -17,3 +17,7 @@ python sync_previous_module.py previous-module-dir current-module-dir
 The files that will be synced are:
 
         minitorch/operators.py minitorch/module.py minitorch/autodiff.py minitorch/scalar.py minitorch/module.py project/run_manual.py project/run_scalar.py
+
+
+# Results
+Epoch  500  loss  2.549220834703897 correct 49

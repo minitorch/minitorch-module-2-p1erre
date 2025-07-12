@@ -22,7 +22,13 @@ class Network(minitorch.Module):
 
     def forward(self, x):
         # TODO: Implement for Task 2.5.
-        raise NotImplementedError("Need to implement for Task 2.5")
+        x = self.layer1(x)
+        x = x.relu()
+        x = self.layer2(x)
+        x = x.relu()
+        x = self.layer3(x)
+        x = x.sigmoid()
+        return x
 
 
 class Linear(minitorch.Module):
@@ -34,8 +40,32 @@ class Linear(minitorch.Module):
 
     def forward(self, x):
         # TODO: Implement for Task 2.5.
-        raise NotImplementedError("Need to implement for Task 2.5")
+        """
+        x: shape (batch, in)
+        weights: shape (in, out)
+        bias: shape (out,)
+        returns: shape (batch, out)
+        """
+        w = self.weights.value
+        b = self.bias.value
+        batch, in_size = x.shape
+        in_w, out_size = w.shape
 
+        assert in_size == in_w, f"Incompatible shapes: {x.shape} and {w.shape}"
+
+        # Expand x to (batch, in, 1)
+        x_expand = x.view(batch, in_size, 1)
+
+        # Expand weights to (1, in, out)
+        w_expand = w.view(1, in_size, out_size)
+
+        # Elementwise multiply and reduce over input dimension
+        # Result: (batch, out)
+        xw = (x_expand * w_expand).sum(1).view(batch, out_size)
+
+        # Add bias with broadcasting: (batch, out) + (out,)
+        return xw + b
+        
 
 def default_log_fn(epoch, total_loss, correct, losses):
     print("Epoch ", epoch, " loss ", total_loss, "correct", correct)
